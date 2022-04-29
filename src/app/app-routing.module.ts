@@ -27,7 +27,7 @@ const routes: Routes = [
           import('./views/dashboard/dashboard.module').then((m) => m.DashboardModule)
       },
       {
-        path: 'scanJob',
+        path: 'product',
         resolve: { lang: LangResolverService, gridDef: GridDefResolverService },
         loadChildren: () =>
           import ('./views/example-listing/example-listing.module').then((m) => m.ExampleListingModule)

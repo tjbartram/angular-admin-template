@@ -3,12 +3,13 @@ import { DataService } from './../../services/data.service';
 import { environment } from 'src/environments/environment';
 import { IGridDefiniton, IRelateCount, IMenuDefinition, IBrowseState, IQueryLine } from 'src/app/interfaces/smart-data-list';
 import { MenuComponent } from 'node_modules/smart-webcomponents-angular/menu'
-import { DataAdapterVirtualDataSourceDetails, GridColumn } from 'smart-webcomponents-angular';
+import { DataAdapterVirtualDataSourceDetails, GridColumn, Grid } from 'smart-webcomponents-angular';
 import { of, EMPTY } from 'rxjs';
 import { mergeMap, take } from 'rxjs/operators';
 import { minResult } from 'src/app/generic-functions';
 import { GridComponent, Smart } from 'smart-webcomponents-angular/grid';
 import { QueryEditorComponent } from '../query-editor/query-editor.component';
+import { LowerCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-smart-data-list',
@@ -104,11 +105,8 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // this.smartGrid.refresh()
     if(this.loadToken) {
       this.dataService.getData(this.targetResource, `${this.baseQueryString}&selectToken=${this.browseState.selectToken}`, this.gridSetToken, null, null, true);
-    }else {
-      this.smartGrid.refresh();
     }
   };
 
@@ -124,14 +122,14 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     if(queryString !== '?') url += queryString;
 
     this.dataService.httpGET(url).subscribe((data: any) => {
-      resultCallbackFunction({ dataSource: data.response[this.targetResource], virtualDataSourceLength: data.response.recordsFound });
+      resultCallbackFunction({ 
+        dataSource: data.response[this.targetResource]
+      });
     });
   };
 
   virtualDataSource = (resultCallbackFunction: any, details: DataAdapterVirtualDataSourceDetails) => {
-    setTimeout(() => {
-      this.getGridData(details.first, details.last, resultCallbackFunction)
-    }, 100);
+    this.getGridData(details.first, details.last, resultCallbackFunction)
   };
 
   gridSetToken = (response: any) => {
@@ -142,53 +140,29 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     else this.sorting = false;
 
     this.relateCount = response.relateCount;
-
-    //For some reason, updating the data source with a virtualDataSource that is not 0 causes an error in the grid component,
-    //Therefore, first assigning a datasource with 0 length, then with the real length...
-    // this.smartGrid.beginUpdate();
-    // this.smartGrid.dataSource.virtualDataSourceLength = response.recordsFound;
-    // this.smartGrid.endUpdate();
-
-    // this.smartGrid.refresh();
+    this.recordCount = `Records Found: ${response.recordsFound}`;
     
-    // this.smartGrid.refreshView();
-
-    // let tempGridSource = new Smart.DataAdapter({
-    //   datafields: [
-    //     { name: 'id', dataType: 'string' },
-    //     { name: 'reference', dataType: 'string' },
-    //     { name: 'title', dataType: 'string' }
-    //   ],
-    //   virtualDataSourceCache: true,
-    //   virtualDataSource: this.virtualDataSource,
-    //   virtualDataSourceLength: 0
-    // });
-    // this.smartGrid.dataSource = tempGridSource;
-
-    let tempGridSource2 = new Smart.DataAdapter({
-      datafields: [
-        { name: 'uuid', dataType: 'string' },
-        { name: 'reference', dataType: 'string' },
-        { name: 'title', dataType: 'string' }
+    let tempGridSource = new Smart.DataAdapter({
+      dataFields: [
+        'id: string',
+        'reference: string',
+        'title: string'
       ],
-      id: 'uuid',
+      id: 'id',
       virtualDataSourceCache: true,
       virtualDataSource: this.virtualDataSource,
       virtualDataSourceLength: response.recordsFound
     });
-    this.smartGrid.dataSource = tempGridSource2;
+    this.smartGrid.dataSource = tempGridSource;
   };
 
   public gridSource = new Smart.DataAdapter({
-    datafields: [
-      { name: 'uuid', dataType: 'string' },
-      { name: 'reference', dataType: 'string' },
-      { name: 'title', dataType: 'string' }
+    dataFields: [
+      'id: string',
+      'reference: string',
+      'title: string'
     ],
-    id: 'uuid',
-    virtualDataSourceCache: true,
-    virtualDataSource: this.virtualDataSource,
-    virtualDataSourceLength: 0
+    id: 'id',
   });
   public gridSelectionSettings = {
     enabled: true,
@@ -199,7 +173,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   };
 
   public gridColumns = [
-    { label: 'ID', dataField: 'uuid' },
+    { label: 'ID', dataField: 'id' },
     { label: 'Ref', dataField: 'title' }
   ];
 
@@ -227,8 +201,9 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   applySubset(type: 'omitset' | 'subset'): void {
     this.smartGrid.ensureVisible(0);
     this.smartGrid.getSelectedRows().then((rows) => {
+      console.log('getSelectedRows() response', rows);
+      //Extract the data-ids from returned rows array
       let rowIndexes = rows.map(x => x[0]);
-      console.log(rows);
       const subSetRequest = { subset: rowIndexes };
       const queryString = `selectToken=${this.browseState.selectToken}${(this.baseQueryString != '') ? `&${this.baseQueryString}` : ``}`;
       this.dataService.getSubsetToken(this.targetResource, queryString, this.gridSetToken, null, subSetRequest, type);
