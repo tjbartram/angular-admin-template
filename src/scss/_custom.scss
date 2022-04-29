@@ -1,2 +1,18 @@
 // Here you can add other styles
 
+smart-menu {
+	--smart-menu-vertical-default-height: auto;
+	// --smart-font-size: 0.85rem;
+	// --smart-bar-width: 10px;
+}
+
+body {
+	--smart-font-size: 0.85rem;
+
+	--smart-grid-default-width: 100%;
+	--smart-grid-default-height: 100%;
+}
+
+div.smart-menu-item-label-element > span > i {
+	margin-right: 5px;
+}

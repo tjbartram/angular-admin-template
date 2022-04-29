@@ -6,7 +6,8 @@ import { Page404Component } from './views/pages/page404/page404.component';
 import { Page500Component } from './views/pages/page500/page500.component';
 import { LoginComponent } from './views/pages/login/login.component';
 import { RegisterComponent } from './views/pages/register/register.component';
-
+import { LangResolverService } from './services/lang-resolver.service';
+import { GridDefResolverService } from './services/grid-def-resolver.service';
 const routes: Routes = [
   {
     path: '',
@@ -24,6 +25,12 @@ const routes: Routes = [
         path: 'dashboard',
         loadChildren: () =>
           import('./views/dashboard/dashboard.module').then((m) => m.DashboardModule)
+      },
+      {
+        path: 'scanJob',
+        resolve: { lang: LangResolverService, gridDef: GridDefResolverService },
+        loadChildren: () =>
+          import ('./views/example-listing/example-listing.module').then((m) => m.ExampleListingModule)
       },
       {
         path: 'theme',

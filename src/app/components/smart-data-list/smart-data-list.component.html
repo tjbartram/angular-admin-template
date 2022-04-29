@@ -1,0 +1,136 @@
+<div class="row">
+	<div class="col-xl-8">
+		<div class="btn-group" role="group" style="flex-wrap: wrap;">
+			<button class="btn btn-primary"
+				(click)="btNewClicked($event)"
+				[disabled]="newDisabled">
+				<span><i class="far fa-plus"></i></span>&nbsp;{{ 'BUTTON.NEW' | translate }}
+			</button>
+			<button class="btn btn-primary"
+				(click)="btShowAllClicked($event)">
+				<span><i class="far fa-stream"></i></span>&nbsp;{{ 'BUTTON.SHOWALL' | translate }}
+			</button>
+			<button class="btn btn-primary"
+				(click)="btShowSubsetClicked($event)">
+				<span><i class="far fa-stream"></i></span>&nbsp;{{ 'BUTTON.SHOWSUBSET' | translate }}
+			</button>
+			<button class="btn btn-primary"
+				(click)="btOmitSubsetClicked($event)">
+				<span><i class="far fa-stream"></i></span>&nbsp;{{ 'BUTTON.OMITSUBSET' | translate }}
+			</button>
+	
+			<button *ngIf="gridDef.queryList.length === 0" class="btn btn-primary"
+				(click)="btQueryClicked($event)">
+				<span><i class="far fa-search"></i></span>&nbsp;{{ 'BUTTON.QUERY' | translate }}
+			</button>
+
+			<button id="queryMenuButton" *ngIf="gridDef.queryList.length > 0" class="btn btn-primary" 
+				(click)="btMenuClicked($event, 'query')"
+				[disabled]="gridDef.queryList.length === 0">
+				<span><i class="far fa-search"></i></span>&nbsp;{{ 'BUTTON.QUERY' | translate }}&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+			</button>
+
+			<button id="printMenuButton" class="btn btn-primary"
+				(click)="btMenuClicked($event, 'print')"
+				[disabled]="gridDef.printList.length === 0">
+				<span><i class="far fa-print"></i></span>&nbsp;{{ 'BUTTON.PRINT' | translate }}&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+			</button>
+
+			<button id="actionMenuButton" class="btn btn-primary"
+				(click)="btMenuClicked($event, 'action')"
+				[disabled]="gridDef.actionList.length === 0">
+				<span><i class="far fa-cogs"></i></span>&nbsp;{{ 'BUTTON.ACTION' | translate }}&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+			</button>
+
+			<button id="viewMenuButton" class="btn btn-primary"
+				(click)="btMenuClicked($event, 'view')">
+				<span><i class="far fa-eye"></i></span>&nbsp;{{ 'BUTTON.VIEW' | translate }}&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+			</button>
+
+			<button id="relateMenuButton" class="btn btn-primary"
+				(click)="btMenuClicked($event, 'relate')"
+				[disabled]="relateCount.length === 0">
+				<span><i class="far fa-sitemap"></i></span>&nbsp;{{ 'BUTTON.RELATE' | translate }}&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+			</button>
+		</div>
+	</div>
+	<div class="col-xl-4">
+		<div class="row">
+			<div class="col-md-7">
+				<div class="input-group">
+					<input class="form-control" type="text" [(ngModel)]="simpleFilterValue" [placeholder]="'DATALIST.FILTER' | translate" (change)="simpleFilterChange()"/>
+					<div class="input-group-append">
+						<button id="searchHistMenuButton" class="btn btn-primary" type="button" 
+							(click)="btMenuClicked($event, 'simpleSearch')"
+							[disabled]="(simpleFilterHistory.length == 0)">
+							<span><i class="far fa-search"></i></span>&nbsp;<span><i class="far fa-chevron-down fa-sm"></i></span>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-5">
+				<div class="input-group">
+					<input class="form-control" type="text" [(ngModel)]="recordCount" readonly/>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div [style.height]="gridHeight" class="row mt-3">
+	<div class="col">
+		<smart-grid #smartGrid
+			id="smartGrid"
+			[theme]="smartTheme"
+			[dataSource]="gridSource"
+			[scrolling]="'virtual'"
+			[columns]="gridColumns"
+			[selection]="gridSelectionSettings">
+			<!-- [columns]="gridDef.viewData.detail.columns"> -->
+		</smart-grid>
+	</div>
+</div>
+
+<smart-menu #menuAction
+	(itemClick)="menuItemClick($event, 'action')"
+	[dataSource]="gridDef.actionList" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<smart-menu #menuPrint
+	(itemClick)="menuItemClick($event, 'print')"
+	[dataSource]="gridDef.printList" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<smart-menu #menuQuery
+	(itemClick)="menuItemClick($event, 'query')"
+	[dataSource]="gridDef.queryList" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<smart-menu #menuView
+	(itemClick)="menuItemClick($event, 'view')"
+	[dataSource]="gridDef.viewList" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<smart-menu #menuSimpleSearch
+	(itemClick)="menuItemClick($event, 'simpleSearch')"
+	[dataSource]="simpleFilterHistory" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<smart-menu #menuRelate
+	(itemClick)="menuItemClick($event, 'relate')"
+	[dataSource]="relateMenuSource" 
+	[theme]="smartTheme"
+	[mode]="'dropDown'">
+</smart-menu>
+
+<app-query-editor-v2 #queryEditor (queryComplete)="queryComplete($event)"></app-query-editor-v2>

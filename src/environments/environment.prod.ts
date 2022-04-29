@@ -1,3 +1,9 @@
 export const environment = {
-  production: true
+  production: true,
+  smartTheme: 'bootstrap',
+  lang: 'en',
+  usedHeight: 260,
+  apiSettings: {
+    endpoint: ''
+  }
 };

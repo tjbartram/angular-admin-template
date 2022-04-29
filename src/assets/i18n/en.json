@@ -1,0 +1,57 @@
+{
+    "NAVBAR": {
+        "DASHBOARD": "Dashboard",
+        "BRAND": "Brands",
+        "PRODUCTS": "Products",
+        "PRICE": "Prices",
+        "SALE": "Sales",
+        "FILE": "Files",
+        "STORE": "Stores",
+        "LOGOUT": "Logout",
+        "ORDER": "Orders",
+        "WAREHOUSE": "Warehouse",
+        "STOCK": "Stock",
+        "ENRICHMENT": "Enrichment List",
+        "ADMIN": "Admin",
+        "BRANDSTORE": "Brand Store",
+        "COMPANY": "Company",
+        "COMPANIES": "Companies",
+        "TRANSFER": "Transfers",
+        "CONTACTS": "Contacts",
+        "PRODUCT": "Product",
+        "APILOG": "API Log",
+        "WEBSALES": "Web Sales",
+        "CONCESSION": "Concession"
+    },
+    "BUTTON": {
+        "NEW": "New",
+        "SHOWALL": "Show All",
+        "SHOWSUBSET": "Show Subset",
+        "OMITSUBSET": "Omit Subset",
+        "QUERY": "Query",
+        "PRINT": "Print",
+        "ACTION": "Actions",
+        "VIEW": "Views",
+        "EXIT": "Exit",
+        "SAVE": "Save",
+        "OK": "OK",
+        "RESET": "Reset",
+        "APPLYCHANGES": "Apply Changes",
+        "ENRICHGUIDE": "Enrichment Guide",
+        "VALIDATE": "Validate",
+        "RELATE": "Relate",
+        "SEARCH": "Search",
+        "EXPORT": "Export"
+    },
+    "DATALIST": {
+        "FILTER": "Filter"
+    },
+    "QUERYEDITOR": {
+        "TITLE": "Query Editor",
+        "OK": "OK",
+        "RESET": "Reset",
+        "CANCEL": "Cancel",
+        "LOADQUERY": "Load Query",
+        "NAME": "Query Name"
+    }
+}
