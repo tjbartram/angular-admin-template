@@ -4,6 +4,6 @@ export const environment = {
   lang: 'en',
   usedHeight: 260,
   apiSettings: {
-    endpoint: ''
+    endpoint: 'https://scanetix.tkcms.co.uk/app/'
   }
 };
