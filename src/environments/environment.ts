@@ -6,7 +6,7 @@ export const environment = {
   production: false,
   smartTheme: 'default',
   lang: 'en',
-  usedHeight: 260,
+  usedHeight: 220,
   apiSettings: {
     // endpoint: 'https://scanetix.tkcms.co.uk/app/'
     endpoint: 'https://192.168.1.35:8085/app/'

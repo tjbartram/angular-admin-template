@@ -15,7 +15,22 @@ export class DefaultHeaderComponent extends HeaderComponent {
   public newTasks = new Array(5)
   public newNotifications = new Array(5)
 
+  public notificationCount = 10;
+  public bPesudoLogin = false;
+
   constructor(private classToggler: ClassToggleService) {
     super();
   }
+
+  revertLogin(): void {
+
+  }
+
+  helpClicked(): void {
+
+  }
+  toggleAside(): void {
+
+  }
+
 }

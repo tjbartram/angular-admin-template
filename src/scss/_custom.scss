@@ -16,3 +16,21 @@ body {
 div.smart-menu-item-label-element > span > i {
 	margin-right: 5px;
 }
+
+.imgResponsive{
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.login-container {
+	min-height: 100vh;
+	display: flex;
+}
+
+.form-signin {
+	width: 100%;
+	max-width: 330px;
+	padding: 15px;
+	margin: auto;
+}

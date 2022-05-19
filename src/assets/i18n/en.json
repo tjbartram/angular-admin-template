@@ -53,5 +53,33 @@
         "CANCEL": "Cancel",
         "LOADQUERY": "Load Query",
         "NAME": "Query Name"
+    },
+    "VIEWEDITOR": {
+        "TITLE": "View Management",
+        "SAVECLOSE": "Save & Close",
+        "CANCEL": "Cancel",
+        "VIEWNAME": "View Name",
+        "DEFAULT": "Default View",
+        "USER": "User",
+        "RESET": "Reset",
+        "OK": "OK"
+    },
+    "VIEWCOLUMNEDITOR": {
+        "TITLE": "Column Settings",
+        "OK": "OK",
+        "CANCEL": "Cancel",
+        "HEADER": "Header",
+        "AGGREGATE": "Aggregates",
+        "SUM": "Sum",
+        "MIN": "Min",
+        "MAX": "Max",
+        "AVG": "Average",
+        "ALIGNLEFT": "Left",
+        "ALIGNCENTER": "Center",
+        "ALIGNRIGHT": "Right",
+        "ALIGNMENT": "Alignment",
+        "WIDTH": "Width",
+        "WIDTHUNIT": "Unit",
+        "ATTRIBUTE": "Attribute"
     }
 }

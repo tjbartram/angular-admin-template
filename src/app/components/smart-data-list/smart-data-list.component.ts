@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, OnDestroy, Output, EventEmitter, ViewChild, HostListener } from '@angular/core';
 import { DataService } from './../../services/data.service';
 import { environment } from 'src/environments/environment';
-import { IGridDefiniton, IRelateCount, IMenuDefinition, IBrowseState, IQueryLine } from 'src/app/interfaces/smart-data-list';
+import { IGridDefiniton, IRelateCount, IMenuDefinition, IBrowseState, IQueryLine, IView } from 'src/app/interfaces/smart-data-list';
 import { MenuComponent } from 'node_modules/smart-webcomponents-angular/menu'
 import { DataAdapterVirtualDataSourceDetails, GridColumn, Grid } from 'smart-webcomponents-angular';
 import { of, EMPTY } from 'rxjs';
@@ -10,6 +10,8 @@ import { minResult } from 'src/app/generic-functions';
 import { GridComponent, Smart } from 'smart-webcomponents-angular/grid';
 import { QueryEditorComponent } from '../query-editor/query-editor.component';
 import { LowerCasePipe } from '@angular/common';
+import { SmartViewEditorComponent } from '../smart-view-editor/smart-view-editor.component';
+import { MessageBoxService } from 'src/app/services/message-box.service';
 
 @Component({
   selector: 'app-smart-data-list',
@@ -25,7 +27,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   @ViewChild('menuSimpleSearch', { static: true, read: MenuComponent }) menuSimpleSearch: MenuComponent;
   @ViewChild('menuRelate', { static: true, read: MenuComponent }) menuRelate: MenuComponent;
   @ViewChild('smartGrid', { static: false, read: GridComponent }) smartGrid: GridComponent;
-
+  @ViewChild('viewEditor', { static: true, read: SmartViewEditorComponent }) viewEditor: SmartViewEditorComponent;
   @ViewChild('queryEditor', { static: true, read: QueryEditorComponent }) queryEditor: QueryEditorComponent;
 
 	@Input('newDisabled') newDisabled: boolean = false;
@@ -39,13 +41,13 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     if(this.gridDef.viewList) {
       this.gridDef.viewList.forEach((element) => {
         if(element.value === this.gridDef.viewData.id){
-          element.html = `${element.name}<i style="float: right" class="far fa-check"></i>`;
+          element.label = `<i style="float: right" class="far fa-check"></i>${element.name}`;
         }else{
-          if(element.name) element.html = element.name;
+          if(element.name) element.label = `<span style="margin-left: 14px">${element.name}</span>`;
         }
       });
     }
-    
+    // this.applyView(this.gridDef.viewData.id);
     this.gridSource.dataFields = this.gridDef.viewData.detail.datafields;
   };
 
@@ -63,7 +65,8 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
 	}
 
   public smartTheme = environment.smartTheme;
-  public recordCount: string = `Records Found: 0`;
+  public recordCount: number = 0;
+  public recordsFound: string = `Records Found: 0`;
 	public simpleFilterValue: string = '';
 	public simpleFilterHistory: IMenuDefinition[] = [];
 	public relateCount: IRelateCount[] = [];
@@ -78,10 +81,11 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
 	private rTime: Date;
 	private delta: number = 200;
   private sorting: boolean;
+	private atag_Link: HTMLAnchorElement;
 
-  public gridDef: IGridDefiniton = { actionList: [], printList: [], queryList: [], viewData: { name: '', fk_user: '', handle: '', type: 1, default: false, detail: { datafields: [], columns: [], editColumns: [] } } };
+  public gridDef: IGridDefiniton = { actionList: [], printList: [], queryList: [], viewData: { id: '', name: '', fk_user: '', handle: '', type: 1, default: false, detail: { datafields: [], columns: [], editColumns: [] } } };
 
-  constructor(private dataService: DataService) { }
+  constructor(private dataService: DataService, private messageBox: MessageBoxService) { }
 
   ngOnInit(): void {
     this.baseQueryString = (this.baseQueryString === '') ? `relateCount=true` : `${this.baseQueryString}&relateCount=true`;
@@ -102,6 +106,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     this.queryEditor.init(this.browseState.lastQuery, environment.apiSettings.endpoint);
     this.userData = this.dataService.getStoredData('userSettings');
     this.simpleFilterHistory = this.browseState.searchHistory;
+    this.atag_Link = document.getElementById("atag_Link") as HTMLAnchorElement;
   }
 
   ngAfterViewInit(): void {
@@ -140,8 +145,9 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     else this.sorting = false;
 
     this.relateCount = response.relateCount;
-    this.recordCount = `Records Found: ${response.recordsFound}`;
-    
+    this.recordCount = response.recordsFound;
+    this.recordsFound = `Records Found: ${response.recordsFound}`
+
     let tempGridSource = new Smart.DataAdapter({
       dataFields: [
         'id: string',
@@ -166,6 +172,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   });
   public gridSelectionSettings = {
     enabled: true,
+    allowRowSelection: false,
     checkBoxes: {
       enabled: true,
       selectAllMode: 'all'
@@ -178,11 +185,10 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   ];
 
   ngOnDestroy(): void {
-
+    this.dataService.setStoredData(`${this.targetResource}browseState`, this.browseState);
   }
 
   btNewClicked(event: any): void {
-    console.log(this.smartGrid.dataSource);
 		this.newCallback();
 	}
   btShowAllClicked(event: any): void {
@@ -200,14 +206,16 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
 
   applySubset(type: 'omitset' | 'subset'): void {
     this.smartGrid.ensureVisible(0);
-    this.smartGrid.getSelectedRows().then((rows) => {
-      console.log('getSelectedRows() response', rows);
-      //Extract the data-ids from returned rows array
-      let rowIndexes = rows.map(x => x[0]);
+    this.smartGrid.getSelectedRowIndexes().then((rows) => {
+      let rowIndexes: number[] = [];
+      rows.forEach(e => {
+        if((e === 0) || (e)) rowIndexes.push(e);
+      });
+      console.log(rowIndexes);
       const subSetRequest = { subset: rowIndexes };
       const queryString = `selectToken=${this.browseState.selectToken}${(this.baseQueryString != '') ? `&${this.baseQueryString}` : ``}`;
       this.dataService.getSubsetToken(this.targetResource, queryString, this.gridSetToken, null, subSetRequest, type);
-    });;
+    });
 	}
 
   btMenuClicked(event: MouseEvent, type: string): void {
@@ -247,58 +255,133 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   }
 
   simpleFilterChange(): void {
-		// if(this.simpleFilterValue !== '') {
-		// 	//Add filter value to history
-		// 	let index = this.simpleFilterHistory.findIndex(element => {
-		// 		return element.value == this.simpleFilterValue;
-		// 	});
-		// 	if(index == -1) this.simpleFilterHistory.push({ html: this.simpleFilterValue, value: this.simpleFilterValue });
-		// 	this.menuSimpleSearch.source([]);
-		// 	this.menuSimpleSearch.source(this.simpleFilterHistory);
-		// 	this.browseState.searchHistory = this.simpleFilterHistory;
+		if(this.simpleFilterValue !== '') {
+			//Add filter value to history
+			let index = this.simpleFilterHistory.findIndex(element => { return element.value == this.simpleFilterValue });
+      if(index == -1) this.simpleFilterHistory.push({ label: this.simpleFilterValue, value: this.simpleFilterValue });
+      console.log(this.simpleFilterHistory);
+      this.menuSimpleSearch.dataSource = [];
+      this.menuSimpleSearch.dataSource = this.simpleFilterHistory;
+			this.browseState.searchHistory = this.simpleFilterHistory;
 
-		// 	//run query
-		// 	let queryString = `simpleFilter=${this.simpleFilterValue}`;
-		// 	if(this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
-		// 	this.dataService.getData(this.targetResource, queryString, this.gridSetToken, null, null, true);
-		// }
+			//run query
+			let queryString = `simpleFilter=${this.simpleFilterValue}`;
+			if(this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
+			this.dataService.getData(this.targetResource, queryString, this.gridSetToken, null, null, true);
+		}
   }
   
   async menuItemClick(event: any, target: string) {
     console.log(event);
 
-    let eventData = {
-      param: event.detail.value,
-      data: []
-    }
+    this.smartGrid.getSelectedRowIndexes().then(async (rows) => {
+      let rowIndexes: number[] = [];
+      rows.forEach(e => { if((e === 0) || (e)) rowIndexes.push(e) });
 
-    switch(target) {
-      case 'action': {
-        break;
+      let page = 1;
+      let totalPages = 1;
+      let selectedData = [];
+      const pageSize = 1000;
+      const subSetRequest = { subset: rowIndexes };
+      if((target === 'action') || (target === 'print') || (target === 'relate')) {
+        do { 
+          let queryString = `page=${page}&pagesize=${pageSize}&selectToken=${this.browseState.selectToken}${(this.baseQueryString != '') ? `&${this.baseQueryString}` : ``}`;
+          let response = await this.dataService.getSubsetData(this.targetResource, queryString, subSetRequest, 'subset');
+          totalPages = response.response.pageCount;
+          if(response.response[this.targetResource]) selectedData = selectedData.concat(...response.response[this.targetResource]);
+          page++;
+        } while(page <= totalPages)
       }
-      case 'print': {
-        break;
+
+      let eventData = {
+        param: event.detail.value,
+        data: selectedData
       }
-      case 'view': {
-        break;
-      }
-      case 'query': {
-        if(event.detail.value === 'query') {
-          //Open advanced Query editor
-          this.queryEditor.open();
-        }else {
-          //Callback to parent
-          this.querySelected.emit(eventData);
+
+      switch(target) {
+        case 'action': {
+          break;
         }
-        break;
-      }
-      case 'simpleSearch': {
-        break;
-      }
-      case 'relate': {
-        break;
-      }
-    };
+        case 'print': {
+          break;
+        }
+        case 'view': {
+          switch(eventData.param) {
+            case 'newview' : {
+              this.viewEditor.openModal('', 'newview');
+              break;
+            }
+            case 'editview': {
+              if(this.gridDef.viewData.fk_user === this.userData.id) {
+                this.viewEditor.openModal(this.gridDef.viewData.id, eventData.param);
+              } else {
+                this.messageBox.showWarning('Cannot Edit View', 'This view was created by another user. Try duplicating!');
+              }
+              break;
+            }
+            case 'dupeview': {
+              this.viewEditor.openModal(this.gridDef.viewData.id, eventData.param);
+              break;
+            }
+            case 'deleteview': {
+              if(this.gridDef.viewData.fk_user === this.userData.id) {
+                if(confirm(`Are you sure you wish to delete the view ${this.gridDef.viewData.name}?`)) {
+                  if(this.gridDef.viewData.id) {
+                    this.dataService.deleteData('interface', this.gridDef.viewData.id, (data) => {
+                      this.messageBox.showSuccess('View Deleted');
+                      this.applyView();
+                    }, null);
+                  }
+                }
+              } else {
+                this.messageBox.showWarning('Cannot Delete View', 'This view was created by another user!');
+              }
+              break;
+            }
+            case 'exportview':
+            case 'excel':
+            case 'csv': {
+              if(!(eventData.param == 'exportview')) {
+                let queryStr = `selectToken=${this.browseState.selectToken}&viewId=${this.gridDef.viewData.id}&format=${eventData.param}`;
+                this.dataService.getData('exportView', queryStr, (response) => {
+                  if(response.filename) {
+                    const link = `${window.location.origin}/reports/${response.filename}`;
+                    this.atag_Link.href = link;
+                    this.atag_Link.download = response.filename;
+                    this.atag_Link.click();			
+                  }
+                });
+              }      
+              break;
+            }
+            default: {
+              if(this.gridDef.viewData.id !== eventData.param) this.applyView(eventData.param);
+            }
+          }
+          break;
+        }
+        case 'query': {
+          if(event.detail.value === 'query') {
+            //Open advanced Query editor
+            this.queryEditor.open();
+          }else {
+            //Callback to parent
+            this.querySelected.emit(eventData);
+          }
+          break;
+        }
+        case 'simpleSearch': {
+          this.simpleFilterValue = eventData.param;
+          let queryString = `simpleFilter=${this.simpleFilterValue}`;
+          if(this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
+          this.dataService.getData(this.targetResource, queryString, this.gridSetToken, null, null, true);  
+          break;
+        }
+        case 'relate': {
+          break;
+        }
+      };
+    });
   }
 
   resizeend = () => {
@@ -317,4 +400,35 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
       this.dataService.getData(this.targetResource, this.baseQueryString, this.gridSetToken, null, this.browseState.lastQuery, true);
     }
   }
+
+  viewEditComplete(event: IView): void {
+    if(event) this.applyView(event.id);
+  }
+
+  private applyView(viewId: string = ''): void {
+		const queryString = `table=${this.targetResource}${(viewId) ? `&viewId=${viewId}` : ``}`
+		this.dataService.getData(`gridDef`, queryString, (data) => {
+			this.gridDef = data;
+			// this.viewUpdate = true;
+      if(this.gridDef.viewList) {
+        this.gridDef.viewList.forEach((element) => {
+          if(element.value === this.gridDef.viewData.id){
+            element.label = `<i style="float: right" class="far fa-check"></i>${element.name}`;
+          }else{
+            if(element.name) element.label = `<span style="margin-left: 14px">${element.name}</span>`;
+          }
+        });
+      }
+      this.smartGrid.columns = this.gridDef.viewData.detail.columns;
+      this.smartGrid.dataSource = new Smart.DataAdapter({
+        dataFields: this.gridDef.viewData.detail.datafields,
+        id: 'id',
+        virtualDataSourceCache: true,
+        virtualDataSource: this.virtualDataSource,
+        virtualDataSourceLength: this.recordCount
+      });
+      this.menuView.dataSource = this.gridDef.viewList;
+			this.browseState.viewId = viewId;
+		}, null);
+	}
 }

@@ -5,6 +5,7 @@ import { IconSetService } from '@coreui/icons-angular';
 import { iconSubset } from './icons/icon-subset';
 import { Title } from '@angular/platform-browser';
 import { environment } from 'src/environments/environment';
+import { AppStartService } from './services/app-start.service';
 
 @Component({
   // tslint:disable-next-line:component-selector
@@ -36,4 +37,8 @@ export class AppComponent implements OnInit {
       }
     });
   }
+}
+
+export function loadUserSettings(appStart: AppStartService) {
+	return () => appStart.getUserSettings();
 }

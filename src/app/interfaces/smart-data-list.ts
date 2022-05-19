@@ -32,10 +32,17 @@ export interface IView {
 export interface IViewDetail {
 	editColumns: IColumn[];
 	columns: GridColumn[];
-	datafields: { name: string, dataType: string }[];
+	datafields: IDataField[];
+}
+
+export interface IDataField {
+	name: string;
+	type: string;
+	map?: string;
 }
 
 export interface IColumn {
+	id: string;
 	header: string;
 	fieldName: string;
 	fieldNumber: number;
@@ -53,11 +60,26 @@ export interface IColumn {
 }
 
 export interface IUser {
+	id: string;
+	fk_account: string;
+	name: string;
+	email: string;
+	type: string;
+	apiKey: string;
+	detail: any;
+	permissions: any;
 
+	selectTag?: string;
 }
 
 export interface IUserSettings {
 	id: string;
+	email: string;
+	username: string;
+	type: string;
+	prefs: {
+		lang: string;
+	}
 }
 
 export interface IRelateCount {
@@ -72,7 +94,7 @@ export interface IBrowseState {
 	lastQuery: IQueryData;
 	selectToken: string;
 	scrollIndex: number;
-	searchHistory: { html: string, value: string }[];
+	searchHistory: IMenuDefinition[];
 }
 
 export interface IQueryLine {
@@ -120,4 +142,26 @@ export interface IFieldDefinition {
     indexed?: boolean;
     length?: number;
     relatedDataClass?: string;
+}
+
+export interface IPropertyList {
+	table: string;
+	fields: IField[];
+}
+
+export interface IField {
+	autoFilled?: boolean;
+	fieldName: string;
+	fieldNumber: number;
+	fieldType?: number;
+	filterName?: string;
+	indexed?: boolean;
+	keywordIndexed?: boolean;
+	mandatory?: boolean;
+	name: string;
+	type: string;
+	kind: string;
+	relation?: string;
+	relatedDataClass?: string;
+	inverseName?: string;
 }

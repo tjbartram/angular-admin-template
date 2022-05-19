@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
-import { DefaultLayoutComponent } from './containers';
+import { DefaultLayoutComponent, LoginContainerComponent } from './containers';
 import { Page404Component } from './views/pages/page404/page404.component';
 import { Page500Component } from './views/pages/page500/page500.component';
 import { LoginComponent } from './views/pages/login/login.component';
@@ -11,8 +11,15 @@ import { GridDefResolverService } from './services/grid-def-resolver.service';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
-    pathMatch: 'full'
+		component: LoginContainerComponent,
+		data: { title: 'Scanetix | Login' },
+		children: [
+			{ path: '', redirectTo: '/login', pathMatch: 'full' },
+			{ path: 'login', component: LoginComponent },
+			// { path: 'resetpassword', component: PasswordResetComponent },
+			// { path: 'newpassword', component: PasswordNewComponent, resolve: { data: PasswordResetResolver } },
+			// { path: 'nocookie', component: NoCookieComponent }
+		]
   },
   {
     path: '',
@@ -79,34 +86,34 @@ const routes: Routes = [
       },
     ]
   },
-  {
-    path: '404',
-    component: Page404Component,
-    data: {
-      title: 'Page 404'
-    }
-  },
-  {
-    path: '500',
-    component: Page500Component,
-    data: {
-      title: 'Page 500'
-    }
-  },
-  {
-    path: 'login',
-    component: LoginComponent,
-    data: {
-      title: 'Login Page'
-    }
-  },
-  {
-    path: 'register',
-    component: RegisterComponent,
-    data: {
-      title: 'Register Page'
-    }
-  },
+  // {
+  //   path: '404',
+  //   component: Page404Component,
+  //   data: {
+  //     title: 'Page 404'
+  //   }
+  // },
+  // {
+  //   path: '500',
+  //   component: Page500Component,
+  //   data: {
+  //     title: 'Page 500'
+  //   }
+  // },
+  // {
+  //   path: 'login',
+  //   component: LoginComponent,
+  //   data: {
+  //     title: 'Login Page'
+  //   }
+  // },
+  // {
+  //   path: 'register',
+  //   component: RegisterComponent,
+  //   data: {
+  //     title: 'Register Page'
+  //   }
+  // },
   {path: '**', redirectTo: 'dashboard'}
 ];
 

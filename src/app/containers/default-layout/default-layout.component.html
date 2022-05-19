@@ -3,36 +3,33 @@
   #sidebar="cSidebar"
   class="d-print-none sidebar sidebar-fixed"
   id="sidebar"
-  visible
->
+  visible>
   <c-sidebar-brand
     [brandFull]="{
-      src: 'assets/img/brand/coreui-pro-angular-white.svg',
-      width: 190,
-      height: 35,
-      alt: 'CoreUI Logo'
+      src: 'assets/images/project_logo.png',
+      width: 200,
+      height: 60,
+      alt: 'Project Name'
     }"
     [brandNarrow]="{
-      src: 'assets/img/brand/coreui-signet-white.svg',
-      width: 46,
-      height: 46,
-      alt: 'CoreUI Logo'
+      src: 'assets/images/project_logo_small.png',
+      width: 50,
+      height: 50,
+      alt: 'Project Name'
     }"
-    routerLink="./"
-  >
+    routerLink="./dashboard">
   </c-sidebar-brand>
-    <perfect-scrollbar [config]="perfectScrollbarConfig">
+  <perfect-scrollbar [config]="perfectScrollbarConfig">
   <!--  [perfectScrollbar]="perfectScrollbarConfig"-->
-  <c-sidebar-nav
-    [navItems]="navItems"
-  >
-  </c-sidebar-nav>
-    </perfect-scrollbar>
+    <c-sidebar-nav
+      [navItems]="navItems">
+    </c-sidebar-nav>
+  </perfect-scrollbar>
   <c-sidebar-toggler
     *ngIf="!sidebar.narrow"
     toggle="unfoldable"
-    cSidebarToggle="sidebar"
-  ></c-sidebar-toggler>
+    cSidebarToggle="sidebar">
+  </c-sidebar-toggler>
 </c-sidebar>
 
 <!--main-->
@@ -45,6 +42,28 @@
       <router-outlet></router-outlet>
     </c-container>
   </div>
+  
+
   <!--app footer-->
   <app-default-footer></app-default-footer>
 </div>
+
+<c-offcanvas
+    id="notiCanvas"
+    placement="start"
+    #notiCanvas2>
+    <c-offcanvas-header>
+      <h5 cOffcanvasTitle>Notifications</h5>
+      <button
+        cButtonClose
+        class="text-reset"
+        cOffcanvasToggle="notiCanvas"
+        aria-label="close">
+      </button>
+    </c-offcanvas-header>
+    <c-offcanvas-body>
+      Content?
+    </c-offcanvas-body>
+  </c-offcanvas>
+
+<c-toaster #toaster position="fixed" [placement]="toasterPlacement"></c-toaster>

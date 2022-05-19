@@ -1,4 +1,3 @@
-<!--<c-header class="mb-4 d-print-none" position="sticky">-->
 <ng-container>
   <c-container [fluid]="true">
     <button
@@ -12,50 +11,21 @@
         size="lg"
       ></svg>
     </button>
-    <c-header-nav class="d-none d-lg-flex me-auto">
-      <c-nav-item>
-        <a cNavLink routerLink="/dashboard" routerLinkActive="active">
-          Dashboard
-        </a>
-      </c-nav-item>
-      <c-nav-item>
-        <a cNavLink routerLink="/users" routerLinkActive="active">Users</a>
-      </c-nav-item>
-      <c-nav-item>
-        <a cNavLink routerLink="/settings" routerLinkActive="active">
-          Settings
-        </a>
-      </c-nav-item>
-    </c-header-nav>
 
-    <c-header-nav class="d-none d-lg-flex">
-      <c-nav-item>
-        <a routerLink="./" cNavLink>
-          <svg cIcon name="cilBell" size="lg"></svg>
-        </a>
-      </c-nav-item>
-      <c-nav-item>
-        <a routerLink="./" cNavLink>
-          <svg cIcon name="cilList" size="lg"></svg>
-        </a>
-      </c-nav-item>
-      <c-nav-item>
-        <a routerLink="./" cNavLink>
-          <svg cIcon name="cilEnvelopeOpen" size="lg"></svg>
-        </a>
-      </c-nav-item>
-    </c-header-nav>
+    <button *ngIf="bPesudoLogin" class="btn btn-primary" (click)="revertLogin()">Revert to System Login</button>
+
     <c-header-nav class="ms-3">
+      <button class="navbar-toggler d-md-down-none notiToggler" type="button" (click)="helpClicked()"><i class="fa fa-question-circle"></i></button>
+      <button cButton class="navbar-toggler d-md-down-none notiToggler" type="button" cOffcanvasToggle="notiCanvas" (click)="toggleAside()"><i [attr.data-count]="notificationCount" class="fa fa-bell notiBadge"></i></button>  
       <ng-container *ngTemplateOutlet="userDropdown"></ng-container>
     </c-header-nav>
-
   </c-container>
-  <c-header-divider></c-header-divider>
+
+  <!-- <c-header-divider></c-header-divider>
   <c-container [fluid]="true">
     <c-breadcrumb-router class="ms-2"></c-breadcrumb-router>
-  </c-container>
+  </c-container> -->
 </ng-container>
-<!--</c-header>-->
 
 <ng-template #userDropdown>
   <c-dropdown alignment="end" variant="nav-item">

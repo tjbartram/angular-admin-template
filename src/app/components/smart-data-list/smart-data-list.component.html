@@ -70,7 +70,7 @@
 			</div>
 			<div class="col-md-5">
 				<div class="input-group">
-					<input class="form-control" type="text" [(ngModel)]="recordCount" readonly/>
+					<input class="form-control" type="text" [(ngModel)]="recordsFound" readonly/>
 				</div>
 			</div>
 		</div>
@@ -84,7 +84,7 @@
 			[theme]="smartTheme"
 			[dataSource]="gridSource"
 			[scrolling]="'virtual'"
-			[columns]="gridColumns"
+			[columns]="gridDef.viewData.detail.columns"
 			[selection]="gridSelectionSettings">
 			<!-- [columns]="gridDef.viewData.detail.columns"> -->
 		</smart-grid>
@@ -134,3 +134,5 @@
 </smart-menu>
 
 <app-query-editor-v2 #queryEditor (queryComplete)="queryComplete($event)"></app-query-editor-v2>
+<app-smart-view-editor #viewEditor (viewEditComplete)="viewEditComplete($event)" [targetResource]="targetResource"></app-smart-view-editor>
+<a id="atag_Link" style="display: none" href="" download="..."></a>
