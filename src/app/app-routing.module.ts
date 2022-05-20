@@ -2,8 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { DefaultLayoutComponent, LoginContainerComponent } from './containers';
-import { LangResolverService } from './services/lang-resolver.service';
-import { GridDefResolverService } from './services/grid-def-resolver.service';
 import { NavBarResolver } from './services/navbar-resolver.service';
 
 const routes: Routes = [
@@ -32,14 +30,6 @@ const routes: Routes = [
             (m) => m.DashboardModule
           ),
       },
-      // {
-      //   path: 'product',
-      //   resolve: { lang: LangResolverService, gridDef: GridDefResolverService },
-      //   loadChildren: () =>
-      //     import('./views/example-listing/example-listing.module').then(
-      //       (m) => m.ExampleListingModule
-      //     ),
-      // },
       {
         path: 'product',
         loadChildren: () =>
@@ -56,7 +46,6 @@ const routes: Routes = [
       scrollPositionRestoration: 'top',
       anchorScrolling: 'enabled',
       initialNavigation: 'enabledBlocking',
-      // relativeLinkResolution: 'legacy'
     }),
   ],
   exports: [RouterModule],
