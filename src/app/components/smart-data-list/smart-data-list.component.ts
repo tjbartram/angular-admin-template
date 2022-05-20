@@ -1,9 +1,29 @@
-import { Component, OnInit, Input, OnDestroy, Output, EventEmitter, ViewChild, HostListener } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  OnDestroy,
+  Output,
+  EventEmitter,
+  ViewChild,
+  HostListener,
+} from '@angular/core';
 import { DataService } from './../../services/data.service';
 import { environment } from 'src/environments/environment';
-import { IGridDefiniton, IRelateCount, IMenuDefinition, IBrowseState, IQueryLine, IView } from 'src/app/interfaces/smart-data-list';
-import { MenuComponent } from 'node_modules/smart-webcomponents-angular/menu'
-import { DataAdapterVirtualDataSourceDetails, GridColumn, Grid } from 'smart-webcomponents-angular';
+import {
+  IGridDefiniton,
+  IRelateCount,
+  IMenuDefinition,
+  IBrowseState,
+  IQueryLine,
+  IView,
+} from 'src/app/interfaces/smart-data-list';
+import { MenuComponent } from 'node_modules/smart-webcomponents-angular/menu';
+import {
+  DataAdapterVirtualDataSourceDetails,
+  GridColumn,
+  Grid,
+} from 'smart-webcomponents-angular';
 import { of, EMPTY } from 'rxjs';
 import { mergeMap, take } from 'rxjs/operators';
 import { minResult } from 'src/app/generic-functions';
@@ -12,162 +32,220 @@ import { QueryEditorComponent } from '../query-editor/query-editor.component';
 import { LowerCasePipe } from '@angular/common';
 import { SmartViewEditorComponent } from '../smart-view-editor/smart-view-editor.component';
 import { MessageBoxService } from 'src/app/services/message-box.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-smart-data-list',
   templateUrl: './smart-data-list.component.html',
-  styleUrls: ['./smart-data-list.component.scss']
+  styleUrls: ['./smart-data-list.component.scss'],
 })
 export class SmartDataListComponent implements OnInit, OnDestroy {
+  @ViewChild('menuAction', { static: true, read: MenuComponent })
+  menuAction: MenuComponent;
+  @ViewChild('menuPrint', { static: true, read: MenuComponent })
+  menuPrint: MenuComponent;
+  @ViewChild('menuQuery', { static: true, read: MenuComponent })
+  menuQuery: MenuComponent;
+  @ViewChild('menuView', { static: true, read: MenuComponent })
+  menuView: MenuComponent;
+  @ViewChild('menuSimpleSearch', { static: true, read: MenuComponent })
+  menuSimpleSearch: MenuComponent;
+  @ViewChild('menuRelate', { static: true, read: MenuComponent })
+  menuRelate: MenuComponent;
+  @ViewChild('smartGrid', { static: false, read: GridComponent })
+  smartGrid: GridComponent;
+  @ViewChild('viewEditor', { static: true, read: SmartViewEditorComponent })
+  viewEditor: SmartViewEditorComponent;
+  @ViewChild('queryEditor', { static: true, read: QueryEditorComponent })
+  queryEditor: QueryEditorComponent;
 
-  @ViewChild('menuAction', { static: true, read: MenuComponent }) menuAction: MenuComponent;
-  @ViewChild('menuPrint', { static: true, read: MenuComponent }) menuPrint: MenuComponent;
-  @ViewChild('menuQuery', { static: true, read: MenuComponent }) menuQuery: MenuComponent;
-  @ViewChild('menuView', { static: true, read: MenuComponent }) menuView: MenuComponent;
-  @ViewChild('menuSimpleSearch', { static: true, read: MenuComponent }) menuSimpleSearch: MenuComponent;
-  @ViewChild('menuRelate', { static: true, read: MenuComponent }) menuRelate: MenuComponent;
-  @ViewChild('smartGrid', { static: false, read: GridComponent }) smartGrid: GridComponent;
-  @ViewChild('viewEditor', { static: true, read: SmartViewEditorComponent }) viewEditor: SmartViewEditorComponent;
-  @ViewChild('queryEditor', { static: true, read: QueryEditorComponent }) queryEditor: QueryEditorComponent;
-
-	@Input('newDisabled') newDisabled: boolean = false;
-	@Input('simpleFilterFields') simpleFilterFields: string[] = [];
-	@Input('doubleClickCallback') doubleClickCallback: Function;
-	@Input('newCallback') newCallback: Function;
-	@Input('targetResource') targetResource: string;
-	@Input('baseQueryString') baseQueryString: string = '';
+  @Input('newDisabled') newDisabled: boolean = false;
+  @Input('simpleFilterFields') simpleFilterFields: string[] = [];
+  @Input('doubleClickCallback') doubleClickCallback: Function;
+  @Input('newCallback') newCallback: Function;
+  @Input('targetResource') targetResource: string;
+  @Input('baseQueryString') baseQueryString: string = '';
   @Input('gridDef') set _gridDef(value: IGridDefiniton) {
     this.gridDef = value;
-    if(this.gridDef.viewList) {
+    if (this.gridDef.viewList) {
       this.gridDef.viewList.forEach((element) => {
-        if(element.value === this.gridDef.viewData.id){
+        if (element.value === this.gridDef.viewData.id) {
           element.label = `<i style="float: right" class="far fa-check"></i>${element.name}`;
-        }else{
-          if(element.name) element.label = `<span style="margin-left: 14px">${element.name}</span>`;
+        } else {
+          if (element.name)
+            element.label = `<span style="margin-left: 14px">${element.name}</span>`;
         }
       });
     }
     // this.applyView(this.gridDef.viewData.id);
     this.gridSource.dataFields = this.gridDef.viewData.detail.datafields;
-  };
+  }
 
   @Output() actionSelected = new EventEmitter();
   @Output() printSelected = new EventEmitter();
   @Output() querySelected = new EventEmitter();
 
   @HostListener('window:resize', ['$event'])
-	onResize(event) {
-		this.rTime = new Date();
-    	if (this.timeout === false) {
-      		this.timeout = true;
-			setTimeout(this.resizeend, this.delta);
+  onResize(event) {
+    this.rTime = new Date();
+    if (this.timeout === false) {
+      this.timeout = true;
+      setTimeout(this.resizeend, this.delta);
     }
-	}
+  }
 
   public smartTheme = environment.smartTheme;
   public recordCount: number = 0;
-  public recordsFound: string = `Records Found: 0`;
-	public simpleFilterValue: string = '';
-	public simpleFilterHistory: IMenuDefinition[] = [];
-	public relateCount: IRelateCount[] = [];
+  public recordsFound: string = `Recs: 0`;
+  public simpleFilterValue: string = '';
+  public simpleFilterHistory: IMenuDefinition[] = [];
+  public relateCount: IRelateCount[] = [];
   public relateMenuSource: IMenuDefinition[] = [];
-  public gridHeight = `${minResult(window.innerHeight - environment.usedHeight, 250)}px`;
+  public gridHeight = `${minResult(
+    window.innerHeight - environment.usedHeight,
+    250
+  )}px`;
 
-	private userData: any;
+  private userData: any;
   private browseState: IBrowseState;
   private loadToken: boolean;
   private autoscroll: boolean;
   private timeout = false;
-	private rTime: Date;
-	private delta: number = 200;
+  private rTime: Date;
+  private delta: number = 200;
   private sorting: boolean;
-	private atag_Link: HTMLAnchorElement;
+  private atag_Link: HTMLAnchorElement;
 
-  public gridDef: IGridDefiniton = { actionList: [], printList: [], queryList: [], viewData: { id: '', name: '', fk_user: '', handle: '', type: 1, default: false, detail: { datafields: [], columns: [], editColumns: [] } } };
+  public gridDef: IGridDefiniton = {
+    actionList: [],
+    printList: [],
+    queryList: [],
+    viewData: {
+      id: '',
+      name: '',
+      fk_user: '',
+      handle: '',
+      type: 1,
+      default: false,
+      detail: { datafields: [], columns: [], editColumns: [] },
+    },
+  };
 
-  constructor(private dataService: DataService, private messageBox: MessageBoxService) { }
+  constructor(
+    private dataService: DataService,
+    private messageBox: MessageBoxService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
-    this.baseQueryString = (this.baseQueryString === '') ? `relateCount=true` : `${this.baseQueryString}&relateCount=true`;
-		this.browseState = this.dataService.getStoredData(`${this.targetResource}browseState`);
-		if(!this.browseState) {
-			this.browseState = {
-				lastQuery: { targetResource: this.targetResource, query: [] },
-				selectToken: '',
-				scrollIndex: 0,
-				viewId: '',
-				searchHistory: []
-      }
-      this.dataService.getData(this.targetResource, this.baseQueryString, this.gridSetToken, null, this.browseState.lastQuery, true);
-    }else {
+    this.baseQueryString =
+      this.baseQueryString === ''
+        ? `relateCount=true`
+        : `${this.baseQueryString}&relateCount=true`;
+    this.browseState = this.dataService.getStoredData(
+      `${this.targetResource}browseState`
+    );
+    if (!this.browseState) {
+      this.browseState = {
+        lastQuery: { targetResource: this.targetResource, query: [] },
+        selectToken: '',
+        scrollIndex: 0,
+        viewId: '',
+        searchHistory: [],
+      };
+      this.dataService.getData(
+        this.targetResource,
+        this.baseQueryString,
+        this.gridSetToken,
+        null,
+        this.browseState.lastQuery,
+        true
+      );
+    } else {
       this.autoscroll = this.browseState.scrollIndex !== 0;
-			this.loadToken = true;
+      this.loadToken = true;
     }
-    this.queryEditor.init(this.browseState.lastQuery, environment.apiSettings.endpoint);
+    this.queryEditor.init(
+      this.browseState.lastQuery,
+      environment.apiSettings.endpoint
+    );
     this.userData = this.dataService.getStoredData('userSettings');
     this.simpleFilterHistory = this.browseState.searchHistory;
-    this.atag_Link = document.getElementById("atag_Link") as HTMLAnchorElement;
+    this.atag_Link = document.getElementById('atag_Link') as HTMLAnchorElement;
   }
 
   ngAfterViewInit(): void {
-    if(this.loadToken) {
-      this.dataService.getData(this.targetResource, `${this.baseQueryString}&selectToken=${this.browseState.selectToken}`, this.gridSetToken, null, null, true);
+    if (this.loadToken) {
+      this.dataService.getData(
+        this.targetResource,
+        `${this.baseQueryString}&selectToken=${this.browseState.selectToken}`,
+        this.gridSetToken,
+        null,
+        null,
+        true
+      );
     }
-  };
+  }
 
-  getGridData = (first: number | undefined, last: number | undefined, resultCallbackFunction: any) => {
-    let url = `${environment.apiSettings.endpoint}${this.targetResource}`
+  getGridData = (
+    first: number | undefined,
+    last: number | undefined,
+    resultCallbackFunction: any
+  ) => {
+    let url = `${environment.apiSettings.endpoint}${this.targetResource}`;
 
     let queryString = '?';
-    if(this.browseState.selectToken) queryString += `selectToken=${this.browseState.selectToken}`
-    if(this.gridDef.viewData.id) queryString+= `${(queryString !== '?') ? '&' : ''}viewId=${this.gridDef.viewData.id}`;
-    if(first) queryString += `${(queryString !== '?') ? '&' : ''}startIndex=${first}`;
-    if(last) queryString += `${(queryString !== '?') ? '&' : ''}endIndex=${last}`;
+    if (this.browseState.selectToken)
+      queryString += `selectToken=${this.browseState.selectToken}`;
+    console.log(this.gridDef.viewData.id);
+    if (this.gridDef.viewData.id)
+      queryString += `${queryString !== '?' ? '&' : ''}viewId=${
+        this.gridDef.viewData.id
+      }`;
+    if (first)
+      queryString += `${queryString !== '?' ? '&' : ''}startIndex=${first}`;
+    if (last)
+      queryString += `${queryString !== '?' ? '&' : ''}endIndex=${last}`;
 
-    if(queryString !== '?') url += queryString;
+    if (queryString !== '?') url += queryString;
 
     this.dataService.httpGET(url).subscribe((data: any) => {
-      resultCallbackFunction({ 
-        dataSource: data.response[this.targetResource]
+      resultCallbackFunction({
+        dataSource: data.response[this.targetResource],
       });
     });
   };
 
-  virtualDataSource = (resultCallbackFunction: any, details: DataAdapterVirtualDataSourceDetails) => {
-    this.getGridData(details.first, details.last, resultCallbackFunction)
+  virtualDataSource = (
+    resultCallbackFunction: any,
+    details: DataAdapterVirtualDataSourceDetails
+  ) => {
+    this.getGridData(details.first, details.last, resultCallbackFunction);
   };
 
   gridSetToken = (response: any) => {
     console.log(response);
     this.browseState.selectToken = response.selectToken;
 
-    if(!this.sorting) this.smartGrid.clearSelection();
+    if (!this.sorting) this.smartGrid.clearSelection();
     else this.sorting = false;
 
     this.relateCount = response.relateCount;
     this.recordCount = response.recordsFound;
-    this.recordsFound = `Records Found: ${response.recordsFound}`
+    this.recordsFound = `Recs: ${response.recordsFound}`;
 
     let tempGridSource = new Smart.DataAdapter({
-      dataFields: [
-        'id: string',
-        'reference: string',
-        'title: string'
-      ],
+      dataFields: this.gridDef.viewData.detail.datafields,
       id: 'id',
       virtualDataSourceCache: true,
       virtualDataSource: this.virtualDataSource,
-      virtualDataSourceLength: response.recordsFound
+      virtualDataSourceLength: response.recordsFound,
     });
     this.smartGrid.dataSource = tempGridSource;
   };
 
   public gridSource = new Smart.DataAdapter({
-    dataFields: [
-      'id: string',
-      'reference: string',
-      'title: string'
-    ],
+    dataFields: ['id: string', 'reference: string', 'title: string'],
     id: 'id',
   });
   public gridSelectionSettings = {
@@ -175,79 +253,126 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     allowRowSelection: false,
     checkBoxes: {
       enabled: true,
-      selectAllMode: 'all'
-    }
+      selectAllMode: 'all',
+    },
   };
 
   public gridColumns = [
     { label: 'ID', dataField: 'id' },
-    { label: 'Ref', dataField: 'title' }
+    { label: 'Ref', dataField: 'title' },
   ];
 
   ngOnDestroy(): void {
-    this.dataService.setStoredData(`${this.targetResource}browseState`, this.browseState);
+    this.dataService.setStoredData(
+      `${this.targetResource}browseState`,
+      this.browseState
+    );
   }
 
   btNewClicked(event: any): void {
-		this.newCallback();
-	}
+    this.newCallback();
+  }
   btShowAllClicked(event: any): void {
-		this.dataService.getData(this.targetResource, this.baseQueryString, this.gridSetToken, null, null, true);
-	}
+    this.dataService.getData(
+      this.targetResource,
+      this.baseQueryString,
+      this.gridSetToken,
+      null,
+      null,
+      true
+    );
+  }
   btShowSubsetClicked(event: any): void {
-		this.applySubset('subset');
-	}
-	btOmitSubsetClicked(event: any): void {
-		this.applySubset('omitset');
-	}
-	btQueryClicked(event: any): void {
-		this.queryEditor.open();
+    this.applySubset('subset');
+  }
+  btOmitSubsetClicked(event: any): void {
+    this.applySubset('omitset');
+  }
+  btQueryClicked(event: any): void {
+    this.queryEditor.open();
   }
 
   applySubset(type: 'omitset' | 'subset'): void {
     this.smartGrid.ensureVisible(0);
     this.smartGrid.getSelectedRowIndexes().then((rows) => {
       let rowIndexes: number[] = [];
-      rows.forEach(e => {
-        if((e === 0) || (e)) rowIndexes.push(e);
+      rows.forEach((e) => {
+        if (e === 0 || e) rowIndexes.push(e);
       });
       console.log(rowIndexes);
       const subSetRequest = { subset: rowIndexes };
-      const queryString = `selectToken=${this.browseState.selectToken}${(this.baseQueryString != '') ? `&${this.baseQueryString}` : ``}`;
-      this.dataService.getSubsetToken(this.targetResource, queryString, this.gridSetToken, null, subSetRequest, type);
+      const queryString = `selectToken=${this.browseState.selectToken}${
+        this.baseQueryString != '' ? `&${this.baseQueryString}` : ``
+      }`;
+      this.dataService.getSubsetToken(
+        this.targetResource,
+        queryString,
+        this.gridSetToken,
+        null,
+        subSetRequest,
+        type
+      );
     });
-	}
+  }
+
+  gridDoubleClick(event: any): void {
+    //event.detail.row.data
+    console.log(event);
+    if(this.doubleClickCallback) {
+      this.doubleClickCallback(event.detail.row.data);
+    }else {
+      this.router.navigate([ `${this.targetResource}/${this.targetResource}-detail/${event.detail.row.data.id}` ]);
+    }
+  }
 
   btMenuClicked(event: MouseEvent, type: string): void {
     let targetElement = event.target;
-    if(targetElement) {
-      if(targetElement["localName"] == 'i')
-      targetElement = targetElement["parentElement"]["parentElement"];
-      let target = <Element> targetElement;
+    if (targetElement) {
+      if (targetElement['localName'] == 'i')
+        targetElement = targetElement['parentElement']['parentElement'];
+      let target = <Element>targetElement;
       let rect = target.getBoundingClientRect();
       switch (type) {
         case 'query': {
-          this.menuQuery.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuQuery.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
         case 'action': {
-          this.menuAction.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuAction.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
         case 'view': {
-          this.menuView.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuView.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
         case 'print': {
-          this.menuPrint.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuPrint.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
         case 'relate': {
-          this.menuRelate.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuRelate.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
         case 'simpleSearch': {
-          this.menuSimpleSearch.open(rect.left, rect.top + rect.height + window.scrollY);
+          this.menuSimpleSearch.open(
+            rect.left,
+            rect.top + rect.height + window.scrollY
+          );
           break;
         }
       }
@@ -255,50 +380,75 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   }
 
   simpleFilterChange(): void {
-		if(this.simpleFilterValue !== '') {
-			//Add filter value to history
-			let index = this.simpleFilterHistory.findIndex(element => { return element.value == this.simpleFilterValue });
-      if(index == -1) this.simpleFilterHistory.push({ label: this.simpleFilterValue, value: this.simpleFilterValue });
+    if (this.simpleFilterValue !== '') {
+      //Add filter value to history
+      let index = this.simpleFilterHistory.findIndex((element) => {
+        return element.value == this.simpleFilterValue;
+      });
+      if (index == -1)
+        this.simpleFilterHistory.push({
+          label: this.simpleFilterValue,
+          value: this.simpleFilterValue,
+        });
       console.log(this.simpleFilterHistory);
       this.menuSimpleSearch.dataSource = [];
       this.menuSimpleSearch.dataSource = this.simpleFilterHistory;
-			this.browseState.searchHistory = this.simpleFilterHistory;
+      this.browseState.searchHistory = this.simpleFilterHistory;
 
-			//run query
-			let queryString = `simpleFilter=${this.simpleFilterValue}`;
-			if(this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
-			this.dataService.getData(this.targetResource, queryString, this.gridSetToken, null, null, true);
-		}
+      //run query
+      let queryString = `simpleFilter=${this.simpleFilterValue}`;
+      if (this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
+      this.dataService.getData(
+        this.targetResource,
+        queryString,
+        this.gridSetToken,
+        null,
+        null,
+        true
+      );
+    }
   }
-  
+
   async menuItemClick(event: any, target: string) {
     console.log(event);
 
     this.smartGrid.getSelectedRowIndexes().then(async (rows) => {
       let rowIndexes: number[] = [];
-      rows.forEach(e => { if((e === 0) || (e)) rowIndexes.push(e) });
+      rows.forEach((e) => {
+        if (e === 0 || e) rowIndexes.push(e);
+      });
 
       let page = 1;
       let totalPages = 1;
       let selectedData = [];
       const pageSize = 1000;
       const subSetRequest = { subset: rowIndexes };
-      if((target === 'action') || (target === 'print') || (target === 'relate')) {
-        do { 
-          let queryString = `page=${page}&pagesize=${pageSize}&selectToken=${this.browseState.selectToken}${(this.baseQueryString != '') ? `&${this.baseQueryString}` : ``}`;
-          let response = await this.dataService.getSubsetData(this.targetResource, queryString, subSetRequest, 'subset');
+      if (target === 'action' || target === 'print' || target === 'relate') {
+        do {
+          let queryString = `page=${page}&pagesize=${pageSize}&selectToken=${
+            this.browseState.selectToken
+          }${this.baseQueryString != '' ? `&${this.baseQueryString}` : ``}`;
+          let response = await this.dataService.getSubsetData(
+            this.targetResource,
+            queryString,
+            subSetRequest,
+            'subset'
+          );
           totalPages = response.response.pageCount;
-          if(response.response[this.targetResource]) selectedData = selectedData.concat(...response.response[this.targetResource]);
+          if (response.response[this.targetResource])
+            selectedData = selectedData.concat(
+              ...response.response[this.targetResource]
+            );
           page++;
-        } while(page <= totalPages)
+        } while (page <= totalPages);
       }
 
       let eventData = {
         param: event.detail.value,
-        data: selectedData
-      }
+        data: selectedData,
+      };
 
-      switch(target) {
+      switch (target) {
         case 'action': {
           break;
         }
@@ -306,65 +456,87 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
           break;
         }
         case 'view': {
-          switch(eventData.param) {
-            case 'newview' : {
+          switch (eventData.param) {
+            case 'newview': {
               this.viewEditor.openModal('', 'newview');
               break;
             }
             case 'editview': {
-              if(this.gridDef.viewData.fk_user === this.userData.id) {
-                this.viewEditor.openModal(this.gridDef.viewData.id, eventData.param);
+              if (this.gridDef.viewData.fk_user === this.userData.id) {
+                this.viewEditor.openModal(
+                  this.gridDef.viewData.id,
+                  eventData.param
+                );
               } else {
-                this.messageBox.showWarning('Cannot Edit View', 'This view was created by another user. Try duplicating!');
+                this.messageBox.showWarning(
+                  'Cannot Edit View',
+                  'This view was created by another user. Try duplicating!'
+                );
               }
               break;
             }
             case 'dupeview': {
-              this.viewEditor.openModal(this.gridDef.viewData.id, eventData.param);
+              this.viewEditor.openModal(
+                this.gridDef.viewData.id,
+                eventData.param
+              );
               break;
             }
             case 'deleteview': {
-              if(this.gridDef.viewData.fk_user === this.userData.id) {
-                if(confirm(`Are you sure you wish to delete the view ${this.gridDef.viewData.name}?`)) {
-                  if(this.gridDef.viewData.id) {
-                    this.dataService.deleteData('interface', this.gridDef.viewData.id, (data) => {
-                      this.messageBox.showSuccess('View Deleted');
-                      this.applyView();
-                    }, null);
+              if (this.gridDef.viewData.fk_user === this.userData.id) {
+                if (
+                  confirm(
+                    `Are you sure you wish to delete the view ${this.gridDef.viewData.name}?`
+                  )
+                ) {
+                  if (this.gridDef.viewData.id) {
+                    this.dataService.deleteData(
+                      'interface',
+                      this.gridDef.viewData.id,
+                      (data) => {
+                        this.messageBox.showSuccess('View Deleted');
+                        this.applyView();
+                      },
+                      null
+                    );
                   }
                 }
               } else {
-                this.messageBox.showWarning('Cannot Delete View', 'This view was created by another user!');
+                this.messageBox.showWarning(
+                  'Cannot Delete View',
+                  'This view was created by another user!'
+                );
               }
               break;
             }
             case 'exportview':
             case 'excel':
             case 'csv': {
-              if(!(eventData.param == 'exportview')) {
+              if (!(eventData.param == 'exportview')) {
                 let queryStr = `selectToken=${this.browseState.selectToken}&viewId=${this.gridDef.viewData.id}&format=${eventData.param}`;
                 this.dataService.getData('exportView', queryStr, (response) => {
-                  if(response.filename) {
+                  if (response.filename) {
                     const link = `${window.location.origin}/reports/${response.filename}`;
                     this.atag_Link.href = link;
                     this.atag_Link.download = response.filename;
-                    this.atag_Link.click();			
+                    this.atag_Link.click();
                   }
                 });
-              }      
+              }
               break;
             }
             default: {
-              if(this.gridDef.viewData.id !== eventData.param) this.applyView(eventData.param);
+              if (this.gridDef.viewData.id !== eventData.param)
+                this.applyView(eventData.param);
             }
           }
           break;
         }
         case 'query': {
-          if(event.detail.value === 'query') {
+          if (event.detail.value === 'query') {
             //Open advanced Query editor
             this.queryEditor.open();
-          }else {
+          } else {
             //Callback to parent
             this.querySelected.emit(eventData);
           }
@@ -373,62 +545,88 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
         case 'simpleSearch': {
           this.simpleFilterValue = eventData.param;
           let queryString = `simpleFilter=${this.simpleFilterValue}`;
-          if(this.baseQueryString != '') queryString += `&${this.baseQueryString}`;
-          this.dataService.getData(this.targetResource, queryString, this.gridSetToken, null, null, true);  
+          if (this.baseQueryString != '')
+            queryString += `&${this.baseQueryString}`;
+          this.dataService.getData(
+            this.targetResource,
+            queryString,
+            this.gridSetToken,
+            null,
+            null,
+            true
+          );
           break;
         }
         case 'relate': {
           break;
         }
-      };
+      }
     });
   }
 
   resizeend = () => {
-		if (+new Date() - +this.rTime < this.delta) {
-			setTimeout(this.resizeend, this.delta);
-		} else {
-			this.timeout = false;
-			this.gridHeight = `${minResult(window.innerHeight - environment.usedHeight, 250)}px`;
-		}
-  }
-  
+    if (+new Date() - +this.rTime < this.delta) {
+      setTimeout(this.resizeend, this.delta);
+    } else {
+      this.timeout = false;
+      this.gridHeight = `${minResult(
+        window.innerHeight - environment.usedHeight,
+        250
+      )}px`;
+    }
+  };
+
   queryComplete(event: IQueryLine[]): void {
-    if(event) {
+    if (event) {
       this.smartGrid.ensureVisible(0);
       this.browseState.lastQuery.query = event;
-      this.dataService.getData(this.targetResource, this.baseQueryString, this.gridSetToken, null, this.browseState.lastQuery, true);
+      this.dataService.getData(
+        this.targetResource,
+        this.baseQueryString,
+        this.gridSetToken,
+        null,
+        this.browseState.lastQuery,
+        true
+      );
     }
   }
 
   viewEditComplete(event: IView): void {
-    if(event) this.applyView(event.id);
+    if (event) this.applyView(event.id);
   }
 
   private applyView(viewId: string = ''): void {
-		const queryString = `table=${this.targetResource}${(viewId) ? `&viewId=${viewId}` : ``}`
-		this.dataService.getData(`gridDef`, queryString, (data) => {
-			this.gridDef = data;
-			// this.viewUpdate = true;
-      if(this.gridDef.viewList) {
-        this.gridDef.viewList.forEach((element) => {
-          if(element.value === this.gridDef.viewData.id){
-            element.label = `<i style="float: right" class="far fa-check"></i>${element.name}`;
-          }else{
-            if(element.name) element.label = `<span style="margin-left: 14px">${element.name}</span>`;
-          }
+    const queryString = `table=${this.targetResource}${
+      viewId ? `&viewId=${viewId}` : ``
+    }`;
+    this.dataService.getData(
+      `gridDef`,
+      queryString,
+      (data) => {
+        this.gridDef = data;
+        // this.viewUpdate = true;
+        if (this.gridDef.viewList) {
+          this.gridDef.viewList.forEach((element) => {
+            if (element.value === this.gridDef.viewData.id) {
+              element.label = `<i style="float: right" class="far fa-check"></i>${element.name}`;
+            } else {
+              if (element.name)
+                element.label = `<span style="margin-left: 14px">${element.name}</span>`;
+            }
+          });
+        }
+        this.smartGrid.columns = this.gridDef.viewData.detail.columns;
+        this.smartGrid.dataSource = new Smart.DataAdapter({
+          dataFields: this.gridDef.viewData.detail.datafields,
+          id: 'id',
+          virtualDataSourceCache: true,
+          virtualDataSource: this.virtualDataSource,
+          virtualDataSourceLength: this.recordCount,
         });
-      }
-      this.smartGrid.columns = this.gridDef.viewData.detail.columns;
-      this.smartGrid.dataSource = new Smart.DataAdapter({
-        dataFields: this.gridDef.viewData.detail.datafields,
-        id: 'id',
-        virtualDataSourceCache: true,
-        virtualDataSource: this.virtualDataSource,
-        virtualDataSourceLength: this.recordCount
-      });
-      this.menuView.dataSource = this.gridDef.viewList;
-			this.browseState.viewId = viewId;
-		}, null);
-	}
+        this.menuView.dataSource = this.gridDef.viewList;
+        this.browseState.viewId = viewId;
+      },
+      null
+    );
+  }
 }

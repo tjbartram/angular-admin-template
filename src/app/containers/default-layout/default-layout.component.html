@@ -48,22 +48,22 @@
   <app-default-footer></app-default-footer>
 </div>
 
-<c-offcanvas
-    id="notiCanvas"
-    placement="start"
-    #notiCanvas2>
-    <c-offcanvas-header>
-      <h5 cOffcanvasTitle>Notifications</h5>
-      <button
-        cButtonClose
-        class="text-reset"
-        cOffcanvasToggle="notiCanvas"
-        aria-label="close">
-      </button>
-    </c-offcanvas-header>
-    <c-offcanvas-body>
-      Content?
-    </c-offcanvas-body>
-  </c-offcanvas>
+<!-- <c-offcanvas
+  id="notiCanvas"
+  placement="start"
+  #notiCanvas2>
+  <c-offcanvas-header>
+    <h5 cOffcanvasTitle>Notifications</h5>
+    <button
+      cButtonClose
+      class="text-reset"
+      cOffcanvasToggle="notiCanvas"
+      aria-label="close">
+    </button>
+  </c-offcanvas-header>
+  <c-offcanvas-body>
+    Content?
+  </c-offcanvas-body>
+</c-offcanvas> -->
 
 <c-toaster #toaster position="fixed" [placement]="toasterPlacement"></c-toaster>

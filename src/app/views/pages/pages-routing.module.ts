@@ -7,6 +7,10 @@ import { RegisterComponent } from './register/register.component';
 
 const routes: Routes = [
   {
+    path: '',
+    redirectTo: 'login'
+  },
+  {
     path: '404',
     component: Page404Component,
     data: {

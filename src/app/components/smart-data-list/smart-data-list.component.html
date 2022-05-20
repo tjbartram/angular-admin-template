@@ -81,6 +81,7 @@
 	<div class="col">
 		<smart-grid #smartGrid
 			id="smartGrid"
+			(rowDoubleClick)="gridDoubleClick($event)"
 			[theme]="smartTheme"
 			[dataSource]="gridSource"
 			[scrolling]="'virtual'"
