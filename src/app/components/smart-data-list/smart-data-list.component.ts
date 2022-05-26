@@ -235,6 +235,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     this.recordsFound = `Recs: ${response.recordsFound}`;
 
     let tempGridSource = new Smart.DataAdapter({
+      mapChar: '.',
       dataFields: this.gridDef.viewData.detail.datafields,
       id: 'id',
       virtualDataSourceCache: true,
@@ -255,6 +256,13 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
       enabled: true,
       selectAllMode: 'all',
     },
+  };
+  public gridBehavior = {
+    columnResizeMode: 'growAndShrink'
+  };
+  public gridAppearance = {
+    alternationStart: 0,
+    alternationCount: 2
   };
 
   public gridColumns = [
@@ -617,6 +625,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
         }
         this.smartGrid.columns = this.gridDef.viewData.detail.columns;
         this.smartGrid.dataSource = new Smart.DataAdapter({
+          mapChar: '.',
           dataFields: this.gridDef.viewData.detail.datafields,
           id: 'id',
           virtualDataSourceCache: true,

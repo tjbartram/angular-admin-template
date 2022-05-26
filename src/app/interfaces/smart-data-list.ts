@@ -37,7 +37,7 @@ export interface IViewDetail {
 
 export interface IDataField {
 	name: string;
-	type: string;
+	dataType: string;
 	map?: string;
 }
 
@@ -57,6 +57,7 @@ export interface IColumn {
 	sum: boolean;
 	avg: boolean;
 	attribute?: string;
+	displayTable?: string;
 }
 
 export interface IUser {

@@ -58,6 +58,7 @@
 							<div [style.height]="gridHeight">
 								<smart-grid #gridColumns
 									id="gridColumns"
+									(rowReorder)="gridColumnRowReorder($event)"
 									(rowDoubleClick)="gridColumnsDoubleClick($event)"
 									[theme]="smartTheme"
 									[columns]="gridColumnsColumns"

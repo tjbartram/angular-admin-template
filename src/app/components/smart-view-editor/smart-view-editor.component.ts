@@ -59,6 +59,7 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
     handle: this.targetResource,
     detail: { editColumns: [], columns: [], datafields: [] },
   };
+  public displayColumns: any[] = []
   public propertyList: IPropertyList[] = [];
   public displayFields: IField[] = [];
   public smartTheme: string = environment.smartTheme;
@@ -165,8 +166,8 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
         };
         if (this.adminEdit) this.viewData.fk_user = '';
 
-        this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
-        // this.gridColumns.refresh();
+        // this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
+        this.updateColumnDisplay();
         this.populateFields();
         this.modal('show');
       } else {
@@ -186,8 +187,8 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
               });
               if (idx >= 0) this.selectedUser = this.usersLookup[idx];
             }
-            this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
-            // this.gridColumns.refresh();
+            // this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
+            this.updateColumnDisplay();
             this.populateFields();
             this.modal('show');
           },
@@ -240,11 +241,35 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
       if (rowData.type === 'object') column.attribute = '';
 
       this.viewData.detail.editColumns.push(column);
-      this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
+      this.updateColumnDisplay();
       this.populateFields();
     }
     //need to check for `relation` property on field for the sake of `map` datafield property
     //need to somehow hide fields that are already in columns
+  }
+
+  public updateColumnDisplay(): void {
+    this.displayColumns = [];
+    this.viewData.detail.editColumns.forEach(element => {
+      let displayColumn = element;
+      if(element.relation)
+        displayColumn.displayTable = `${element.relation}`;
+      else
+        displayColumn.displayTable = `${element.table}`;
+      this.displayColumns.push(displayColumn);
+    });
+    // this.gridColumnsSource.dataSource = this.displayColumns;
+    this.gridColumnsSource = new Smart.DataAdapter({
+      datafields: [
+        { name: 'id', type: 'string' },
+        { name: 'header', type: 'string' },
+        { name: 'fieldName', type: 'string' },
+        { name: 'displayTable', type: 'string' }
+      ],
+      datatype: 'json',
+      id: 'id',
+      dataSource: this.displayColumns,
+    });
   }
 
   public gridColumnsDoubleClick(event: any) {
@@ -271,37 +296,37 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
     const regex = />/gi;
 
     this.viewData.detail.editColumns.forEach((element) => {
-      let datafield: IDataField = { name: '', type: '' };
+      let datafield: IDataField = { name: '', dataType: '' };
       let column: Partial<GridColumn> = {};
 
-      datafield.type = element.fieldType;
+      datafield.dataType = element.fieldType;
       column.label = element.header;
       column.width = `${element.width}${element.widthUnit}`;
       column.cellsAlign = element.alignment;
 
       if (element.relation && element.attribute && element.attribute !== '') {
-        datafield.name = `${element.relation.replace(regex, '.')}.${
-          element.fieldName
-        }.${element.attribute}`;
-        datafield.map = `${element.relation}>${element.fieldName}>${element.attribute}`;
-        column.dataField = `${element.relation.replace(regex, '.')}.${
-          element.fieldName
-        }.${element.attribute}`;
+        datafield.name = `${element.relation.replace(regex, '.')}.${element.fieldName}.${element.attribute}`;
+        datafield.map = `${element.relation}.${element.fieldName}.${element.attribute}`;
+        column.dataField = `${element.relation.replace(regex, '.')}.${element.fieldName}.${element.attribute}`;
       } else if (element.relation) {
-        datafield.name = `${element.relation.replace(regex, '.')}.${
-          element.fieldName
-        }`;
-        datafield.map = `${element.relation}>${element.fieldName}`;
-        column.dataField = `${element.relation.replace(regex, '.')}.${
-          element.fieldName
-        }`;
+        datafield.name = `${element.relation.replace(regex, '.')}.${element.fieldName}`;
+        datafield.map = `${element.relation}.${element.fieldName}`;
+        column.dataField = `${element.relation.replace(regex, '.')}.${element.fieldName}`;
       } else if (element.attribute && element.attribute !== '') {
         datafield.name = `${element.fieldName}.${element.attribute}`;
-        datafield.map = `${element.fieldName}>${element.attribute}`;
+        datafield.map = `${element.fieldName}.${element.attribute}`;
         column.dataField = `${element.fieldName}.${element.attribute}`;
       } else {
         datafield.name = element.fieldName;
         column.dataField = element.fieldName;
+      }
+
+      if(element.relation) {
+        let index = this.viewData.detail.datafields.findIndex(e => { return e.name === element.relation });
+        if(index === -1) {
+          let relateDatafield = { name: element.relation, dataType: 'object' };
+          this.viewData.detail.datafields.push(relateDatafield);
+        }
       }
 
       let aggre: string[] = [];
@@ -339,41 +364,39 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
   public btRemoveClick(event: any): void {
     this.gridColumns.getSelectedRowIndexes().then((rows) => {
       if (rows.length > 0) {
-        let index = rows[0];
+        let index = -1;
+        for(let i = 0; i < rows.length; i++) { if(rows[i]) index = rows[i] };
+        console.log(index);
         const msg = `Are you sure you wish to delete the column ${this.viewData.detail.editColumns[index].header}?`;
         if (confirm(msg)) {
           this.viewData.detail.editColumns.splice(index, 1);
-          this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
-          // this.gridColumns.refresh();
+          // this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
+          this.updateColumnDisplay();
           this.populateFields();
         }
       }
     });
-    // const index = this.gridColumns.getselectedrowindex();
-    // if(index >= 0) {
-    // 	const msg = `Are you sure you wish to delete the column ${this.viewData.detail.editColumns[index].header}?`;
-    // 	if(confirm(msg)) {
-    // 		this.viewData.detail.editColumns.splice(index, 1);
-    // 		this.gridColumnsSource.dataSource = this.viewData.detail.editColumns;
-    // 		this.gridColumns.refresh();
-    // 		this.populateFields();
-    // 	}
-    // }
   }
+  public gridColumnRowReorder(event: any): void {
+    console.log(event);
+    let newIndex = event.detail.newIndex;
+    let index = event.detail.index;
+
+    if((index + 1) === newIndex) newIndex++;
+
+    this.viewData.detail.editColumns.splice(newIndex, 0, this.viewData.detail.editColumns[index]);
+    if(newIndex > index) {
+      this.viewData.detail.editColumns.splice(index, 1);
+    } else {
+      this.viewData.detail.editColumns.splice(index + 1, 1);
+    }
+    console.log(this.viewData.detail.editColumns);
+  };
 
   public columnEditComplete(event: any): void {
     if (event) {
       this.viewData.detail.editColumns[event.index] = event.data;
-      this.gridColumnsSource = new Smart.DataAdapter({
-        datafields: [
-          { name: 'id', type: 'string' },
-          { name: 'header', type: 'string' },
-          { name: 'fieldName', type: 'string' },
-        ],
-        datatype: 'json',
-        id: 'id',
-        dataSource: this.viewData.detail.editColumns,
-      });
+      this.updateColumnDisplay();
     }
     this.vb_showColumnDetail = false;
   }
@@ -482,14 +505,16 @@ export class SmartViewEditorComponent implements OnInit, OnDestroy {
       { name: 'id', type: 'string' },
       { name: 'header', type: 'string' },
       { name: 'fieldName', type: 'string' },
+      { name: 'displayTable', type: 'string' }
     ],
     datatype: 'json',
     id: 'id',
-    dataSource: this.viewData.detail.editColumns,
+    dataSource: [],
   });
 
   public gridColumnsColumns: GridColumn[] = [
     { label: 'Header', dataField: 'header' },
     { label: 'Field Name', dataField: 'fieldName' },
+    { label: 'Source Table', dataField: 'displayTable' }
   ];
 }
