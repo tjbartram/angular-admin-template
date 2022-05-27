@@ -86,9 +86,10 @@
 			[dataSource]="gridSource"
 			[scrolling]="'virtual'"
 			[columns]="gridDef.viewData.detail.columns"
-			[selection]="gridSelectionSettings"
-			[behavior]="gridBehavior"
-			[appearance]="gridAppearance">
+			[selection]="gridSettings.selection"
+			[behavior]="gridSettings.behavior"
+			[appearance]="gridSettings.appearance"
+			[sorting]="gridSettings.sorting">
 			<!-- [columns]="gridDef.viewData.detail.columns"> -->
 		</smart-grid>
 	</div>

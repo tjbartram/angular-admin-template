@@ -5,6 +5,8 @@ import { Page500Component } from './page500/page500.component';
 import { LoginComponent } from './login/login.component';
 import { RegisterComponent } from './register/register.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
+import { NewPasswordComponent } from './new-password/new-password.component';
+import { PasswordResetResolver } from 'src/app/services/password-reset-resolver.service';
 
 const routes: Routes = [
   {
@@ -14,37 +16,27 @@ const routes: Routes = [
   {
     path: '404',
     component: Page404Component,
-    data: {
-      title: 'Page 404'
-    }
   },
   {
     path: '500',
     component: Page500Component,
-    data: {
-      title: 'Page 500'
-    }
   },
   {
     path: 'login',
     component: LoginComponent,
-    data: {
-      title: 'Login Page'
-    }
   },
   {
     path: 'register',
     component: RegisterComponent,
-    data: {
-      title: 'Register Page'
-    }
   },
   {
     path: 'reset-password',
     component: ResetPasswordComponent,
-    data: {
-      title: 'Reset Password'
-    }
+  },
+  {
+    path: 'new-password',
+    component: NewPasswordComponent,
+    resolve: { data: PasswordResetResolver }
   }
 ];
 

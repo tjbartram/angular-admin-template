@@ -188,8 +188,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
   }
 
   getGridData = (
-    first: number | undefined,
-    last: number | undefined,
+    details: DataAdapterVirtualDataSourceDetails,
     resultCallbackFunction: any
   ) => {
     let url = `${environment.apiSettings.endpoint}${this.targetResource}`;
@@ -202,10 +201,24 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
       queryString += `${queryString !== '?' ? '&' : ''}viewId=${
         this.gridDef.viewData.id
       }`;
-    if (first)
-      queryString += `${queryString !== '?' ? '&' : ''}startIndex=${first}`;
-    if (last)
-      queryString += `${queryString !== '?' ? '&' : ''}endIndex=${last}`;
+    if (details.first)
+      queryString += `${queryString !== '?' ? '&' : ''}startIndex=${details.first}`;
+    if (details.last)
+      queryString += `${queryString !== '?' ? '&' : ''}endIndex=${details.last}`;
+
+    if(details.sorting) {
+      console.log(details.sorting);
+      if(details.sorting.length > 0) {
+        let sortString = '';
+        for(let element in details.sorting) {
+          console.log(element, details.sorting[element]);
+          let dir = (details.sorting[element].sortOrder == 'asc') ? '>' : '<';
+          if(sortString !== '') sortString += ';';
+          sortString += `${element};${dir}`
+        }
+        if(sortString !== '') queryString += `${queryString !== '?' ? '&' : ''}order_by=${sortString}`
+      }
+    }
 
     if (queryString !== '?') url += queryString;
 
@@ -220,7 +233,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     resultCallbackFunction: any,
     details: DataAdapterVirtualDataSourceDetails
   ) => {
-    this.getGridData(details.first, details.last, resultCallbackFunction);
+    this.getGridData(details, resultCallbackFunction);
   };
 
   gridSetToken = (response: any) => {
@@ -258,17 +271,36 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     },
   };
   public gridBehavior = {
-    columnResizeMode: 'growAndShrink'
+    columnResizeMode: 'growAndShrink',
+    allowColumnAutoSizeOnDoubleClick: true
   };
   public gridAppearance = {
     alternationStart: 0,
     alternationCount: 2
   };
 
-  public gridColumns = [
-    { label: 'ID', dataField: 'id' },
-    { label: 'Ref', dataField: 'title' },
-  ];
+  public gridSettings = {
+    sorting: {
+      enabled: true,
+      mode: 'many'
+    },
+    appearance: {
+      alternationStart: 0,
+      alternationCount: 2
+    },
+    behavior: {
+      columnResizeMode: 'growAndShrink'
+    },
+    selection: {
+      enabled: true,
+      allowRowSelection: false,
+      defaultSelection: true,
+      checkBoxes: {
+        enabled: true,
+        selectAllMode: 'all',
+      }  
+    }
+  };
 
   ngOnDestroy(): void {
     this.dataService.setStoredData(
