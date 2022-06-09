@@ -26,7 +26,7 @@ export class GridDefResolverService implements Resolve<any> {
       if (route.routeConfig.path)
         path = route.routeConfig.path.replace('-listing', '');
 
-    if (path === 'enrichmentlist') path = 'hostProduct';
+    if (path === 'scan-job') path = 'scanJob';
 
     let url = `${environment.apiSettings.endpoint}gridDef?table=${path}`;
     const browseState: IBrowseState = this.dataService.getStoredData(

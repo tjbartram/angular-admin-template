@@ -27,6 +27,9 @@ export class DetailResolverService implements Resolve<any> {
       if (route.routeConfig)
         if (route.routeConfig.path)
           target = route.routeConfig.path.replace('-detail', '');
+
+      if(target === 'scan-job') target = 'scanJob';
+      
       let queryString = '';
 
       switch (target) {

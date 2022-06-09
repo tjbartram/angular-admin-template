@@ -35,6 +35,11 @@ const routes: Routes = [
         loadChildren: () =>
           import('./views/product/product.module').then((m) => m.ProductModule),
       },
+      {
+        path: 'scan-job',
+        loadChildren: () =>
+          import ('./views/scan-job/scan-job.module').then((m) => m.ScanJobModule),
+      }
     ],
   },
   { path: '**', redirectTo: '404' }

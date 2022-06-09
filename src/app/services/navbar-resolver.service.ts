@@ -22,7 +22,8 @@ export class NavBarResolver implements Resolve<any> {
 			//Default example nav:
 			nav.push({ name: 'Dashboard', url: '/dashboard', icon: 'fa-light fa-chart-line' });
 			nav.push({ name: 'Product', url: '/product', icon: 'fa-light fa-clipboard-list' });
-
+			nav.push({ name: 'Scan Job', url: '/scan-job', icon: 'fa-light fa-clipboard-list' });
+			
 			switch(userSettings.type) {
 				case 'a user type': {
 					//Add elements to nav

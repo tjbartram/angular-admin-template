@@ -17,6 +17,7 @@ import {
   IBrowseState,
   IQueryLine,
   IView,
+  IUserSettings,
 } from 'src/app/interfaces/smart-data-list';
 import { MenuComponent } from 'node_modules/smart-webcomponents-angular/menu';
 import {
@@ -106,7 +107,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     250
   )}px`;
 
-  private userData: any;
+  private userData: IUserSettings;
   private browseState: IBrowseState;
   private loadToken: boolean;
   private autoscroll: boolean;
@@ -246,6 +247,7 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
     this.relateCount = response.relateCount;
     this.recordCount = response.recordsFound;
     this.recordsFound = `Recs: ${response.recordsFound}`;
+    this.buildRelateMenu();
 
     let tempGridSource = new Smart.DataAdapter({
       mapChar: '.',
@@ -354,6 +356,22 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
       );
     });
   }
+
+  buildRelateMenu(): void {
+    this.relateMenuSource = [];
+    this.relateCount.forEach(count => {
+      let bAdd = true;
+      if(this.userData.prefs.sidebarAccess) {
+        if(this.userData.prefs.sidebarAccess[count.listing] !== undefined) bAdd = this.userData.prefs.sidebarAccess[count.listing];
+      };
+      if(bAdd) {
+        let menuItem: IMenuDefinition = { 
+          value: count.table, label: `${count.label} [${count.count}]`, disabled: (count.count === 0)
+        };
+        this.relateMenuSource.push(menuItem);
+      }
+    });
+  };
 
   gridDoubleClick(event: any): void {
     //event.detail.row.data
@@ -490,9 +508,11 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
 
       switch (target) {
         case 'action': {
+          this.actionSelected.emit(eventData);
           break;
         }
         case 'print': {
+          this.printSelected.emit(eventData);
           break;
         }
         case 'view': {
@@ -598,6 +618,26 @@ export class SmartDataListComponent implements OnInit, OnDestroy {
           break;
         }
         case 'relate': {
+          let relateIdx = this.relateCount.findIndex(element => { return element.table === eventData.param });
+          let targetBrowseState = this.dataService.getStoredData(`${eventData.param}browseState`);
+          if(!targetBrowseState) {
+            targetBrowseState = {
+              lastQuery: { targetResource: this.targetResource, query: [] },
+              selectToken: '',
+              scrollIndex: 0,
+              viewId: '',
+              searchHistory: []
+            }
+          }else {
+            targetBrowseState.scrollIndex = 0;
+          }
+
+          //Get selectToken for target table
+          this.dataService.getData(eventData.param, `relateToken=${this.browseState.selectToken}&sourceTable=${this.targetResource}`, (response) => {
+            targetBrowseState.selectToken = response.selectToken;
+            this.dataService.setStoredData(`${eventData.param}browseState`, targetBrowseState);
+            this.router.navigate([ this.relateCount[relateIdx].listing ]);
+          }, null, null, true);
           break;
         }
       }

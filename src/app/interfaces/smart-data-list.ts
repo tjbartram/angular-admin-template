@@ -80,6 +80,7 @@ export interface IUserSettings {
 	type: string;
 	prefs: {
 		lang: string;
+		sidebarAccess: any;
 	}
 }
 

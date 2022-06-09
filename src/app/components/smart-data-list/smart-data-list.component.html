@@ -99,42 +99,54 @@
 	(itemClick)="menuItemClick($event, 'action')"
 	[dataSource]="gridDef.actionList" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <smart-menu #menuPrint
 	(itemClick)="menuItemClick($event, 'print')"
 	[dataSource]="gridDef.printList" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <smart-menu #menuQuery
 	(itemClick)="menuItemClick($event, 'query')"
 	[dataSource]="gridDef.queryList" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <smart-menu #menuView
 	(itemClick)="menuItemClick($event, 'view')"
 	[dataSource]="gridDef.viewList" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <smart-menu #menuSimpleSearch
 	(itemClick)="menuItemClick($event, 'simpleSearch')"
 	[dataSource]="simpleFilterHistory" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <smart-menu #menuRelate
 	(itemClick)="menuItemClick($event, 'relate')"
 	[dataSource]="relateMenuSource" 
 	[theme]="smartTheme"
-	[mode]="'dropDown'">
+	[mode]="'dropDown'"
+	[opened]="false"
+	[animation]="'simple'">
 </smart-menu>
 
 <app-query-editor-v2 #queryEditor (queryComplete)="queryComplete($event)"></app-query-editor-v2>
